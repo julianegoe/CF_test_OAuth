@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        #container {
+            max-width: 500px;
+        }
+
+        h4 {
+            margin-top: 25px;
+        }
+    </style>
+
+    <main id="container">
+        <h1>Testing Reddit OAuth</h1>
+
+        <h2>Get Redirect URL</h2>
+        <button id="getUri" type="button">Request URI</button>
+        <a target="_blank" id="url"></a>
+
+        <h2>Get Bearer Token</h2>
+        <form>
+            <label>Enter Redirect URL:</label>
+            <input id="enterUrl" value="">
+            <button id="submitForm" type="submit">Submit</button>
+        </form>
+        <p id="userInfo"></p>
+
+
+    </main>
+
+    <script>
+        let getUriElement = document.getElementById("getUri");
+        let urlText = document.getElementById("url");
+        let formInput = document.getElementById("enterUrl");
+        let submitForm = document.getElementById("submitForm");
+        let userInfoElement = document.getElementById("userInfo")
+
+        const showUserInfo = () => {
+            const endpoint = "https://oauth.reddit.com/api/v1/me"
+            const access_token = window.localStorage.getItem("access_token")
+            fetch(endpoint, {
+                headers: {
+                    'Authorization': `bearer ${access_token}`
+                }
+            }).then((res) => {
+                return res.json()
+            }).then((json) => {
+                console.log(json)
+            }).catch(err => console.log(err))
+
+        }
+
+        submitForm.addEventListener('click', (e) => {
+            e.preventDefault();
+            const params = parseUrl(formInput.value)
+            console.log(params);
+            fetch(`https://4hlsppbyaf.execute-api.eu-central-1.amazonaws.com/api/get-bearer-token/${params.state}/${params.code}`)
+                .then((res) => {
+                    return res.json()
+                }).then((json) => {
+                    console.log(json)
+                    window.localStorage.setItem("access_token", json.body.access_token)
+                    showUserInfo()
+                }).catch((err) => {
+                    console.log(err)
+                })
+
+        })
+
+        getUriElement.addEventListener('click', (e) => {
+            e.preventDefault();
+            fetch("https://4hlsppbyaf.execute-api.eu-central-1.amazonaws.com/api/get-auth-url")
+                .then((res) => {
+                    return res.json()
+                })
+                .then((json) => {
+                    console.log(json.authUrl)
+                    urlText.innerText = "Authorize App"
+                    urlText.setAttribute("href", json.authUrl)
+                }).catch((err) => {
+                    console.log(err)
+                })
+        });
+
+        const parseUrl = (url) => {
+            const urlTpParse = new URL(url);
+            return {
+                state: urlTpParse.searchParams.get('state'),
+                code: urlTpParse.searchParams.get('code')
+            };
+
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="eng">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Test Page</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Place favicon.ico in the root directory -->
+</head>
+
+<body>
+	<style>
+		#container {
+			max-width: 500px;
+		}
+
+		h4 {
+			margin-top: 25px;
+		}
+	</style>
+
+	<main id="container">
+		<h1>OAuth2 Test</h1>
+		<h4><b>Step 1:</b> Get the Auth URL</h4>
+		<p>Click the button below to get your auth url.</p>
+		<button id="getCode">Get OAuth URL</button>
+		<p id="result"></p>
+		<a id="authURL" href target="_blank">Click to authorise</a>
+
+		<h4>Step 2: Get your code and exchange for an access token</h4>
+		<p>
+			After you’re redirected back to your Meet app on GitHub, copy the code
+			from the URI.
+		</p>
+		<br />
+		<label>Code input
+			<input id="code" type="text" value="code" />
+		</label>
+		<button id="getToken">Get Token</button>
+		<p id="accessToken"></p>
+
+	</main>
+
+	<script>
+		let getCodeElement = document.getElementById("getCode");
+		getCodeElement.addEventListener('click', (e) => {
+			e.preventDefault()
+			getAuthUrl()
+		});
+
+		let authUrlElement = document.getElementById("authURL");
+		authUrlElement.onClick = function getAuthToken() {
+
+		}
+
+		let resultElement = document.getElementById("result");
+
+		let codeInput = document.getElementById("code");
+		let getTokenElement = document.getElementById("getToken");
+		let accessTokenElement = document.getElementById("accessToken")
+
+
+
+
+		function getAuthUrl() {
+			fetch("https://q23md1r6c4.execute-api.eu-central-1.amazonaws.com/api/get-auth-url")
+				.then((response) => {
+					return response.json()
+				}).then((json) => {
+					console.log(json);
+					let result = JSON.stringify(json);
+					let { authUrl } = JSON.parse(result);
+					resultElement.innerText = result;
+					authUrlElement.href = authUrl;
+					return authUrl
+				}).catch((err) => {
+					console.log(err)
+					return err
+				})
+		};
+
+		getTokenElement.onclick = (e) => {
+			e.preventDefault();
+			let code = codeInput.value
+			if (decodeURIComponent(code) === code) {
+				code = encodeURIComponent(codeValue.value);
+			}
+			getAccessToken(code)
+		}
+
+
+		function getAccessToken(code) {
+			let endpoint = `https://q23md1r6c4.execute-api.eu-central-1.amazonaws.com/api/token/${code}`;
+			console.log(endpoint)
+
+			fetch(endpoint)
+				.then((response) => {
+					return response.json()
+				}).then((json) => {
+					console.log(json)
+					accessTokenElement.innerText = json.authUrl
+				})
+			/* .catch((error) => {
+				console.log(error)
+			}) */
+		};
+
+
+
+
+
+
+
+
+	</script>
+</body>
+
+</html>
